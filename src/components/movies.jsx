@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { getMovies } from "../services/fakeMovieService";
 import { deleteMovie } from "../services/fakeMovieService";
 
-class Movie extends Component {
+class Movies extends Component {
   state = {
     movies: getMovies()
   };
@@ -84,4 +84,4 @@ class Movie extends Component {
   }
 }
 
-export default Movie;
+export default Movies;
