@@ -64,14 +64,8 @@ class Movies extends Component {
   }
 
   render() {
-    const {
-      movies,
-      currentPage,
-      limit,
-      currentGenre,
-      sortColumn,
-      genres,
-    } = this.state;
+    const { movies, currentPage, limit, currentGenre, sortColumn, genres } =
+      this.state;
 
     const { totalCount, data: displayedMovies } = this.getPagedData();
 
@@ -88,7 +82,9 @@ class Movies extends Component {
             />
           </div>
           <div className="col">
-            <p>Showing {totalCount} movies in the database</p>
+            <p>
+              <strong>Showing {totalCount} movies in the database</strong>
+            </p>
             <MoviesTable
               movies={displayedMovies}
               onLike={this.handleLike}
