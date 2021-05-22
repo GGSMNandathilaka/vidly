@@ -1,87 +1,116 @@
 import React, { Component } from "react";
+import { getGenres } from "../services/fakeGenreService";
 import { getMovies } from "../services/fakeMovieService";
-import { deleteMovie } from "../services/fakeMovieService";
+import { paginate } from "../utils/paginate";
+import ListGroup from "./common/list-group";
+import Paginator from "./common/paginator";
+import MoviesTable from "./moviesTable";
+import _ from "lodash";
 
 class Movies extends Component {
   state = {
-    movies: getMovies()
+    currentPage: 1,
+    limit: 4,
+    currentGenre: "all_genres",
+    sortColumn: { path: "title", order: "asc" },
+    movies: [],
+    genres: [],
   };
 
-  handleDelete = movieId => {
-    deleteMovie(movieId.id);
-    this.setState({ movies: getMovies() });
+  componentDidUpdate(prevProps, prevState) {}
+
+  componentDidMount() {
+    const genres = [{ _id: "all_genres", name: "All Genres" }, ...getGenres()];
+    this.setState({ movies: getMovies(), genres });
+  }
+
+  handleLike = (movie) => {
+    const movies = [...this.state.movies];
+    const index = movies.indexOf(movie);
+    movies[index] = { ...movie };
+    movies[index].liked = !movie.liked;
+    this.setState({ movies });
   };
+
+  handlePageClicked = (currentPage) => {
+    this.setState({ currentPage });
+  };
+
+  handleGenreSelected = (currentGenre) => {
+    this.setState({ currentGenre, currentPage: 1 });
+  };
+
+  handleSort = (sortColumn) => {
+    this.setState({ sortColumn });
+  };
+
+  getPagedData() {
+    const { movies, currentPage, limit, currentGenre, sortColumn } = this.state;
+
+    let filteredMovies =
+      currentGenre && currentGenre !== "all_genres"
+        ? movies.filter((m) => m.genre._id === currentGenre)
+        : movies;
+
+    let sortedList = _.orderBy(
+      filteredMovies,
+      [sortColumn.path],
+      [sortColumn.order]
+    );
+
+    const displayedMovies = paginate(sortedList, currentPage, limit);
+
+    return { totalCount: filteredMovies.length, data: displayedMovies };
+  }
 
   render() {
+    const {
+      movies,
+      currentPage,
+      limit,
+      currentGenre,
+      sortColumn,
+      genres,
+    } = this.state;
+
+    const { totalCount, data: displayedMovies } = this.getPagedData();
+
+    if (movies && movies.length === 0)
+      return <p>There are no movies in the database</p>;
     return (
-      <div className="container h-100">
-        <div className="row h-100 justify-content-center align-items-center">
-          <div>{this.formatMovieCountText()}</div>
-
-          <table className="table">
-            <thead>
-              <tr>
-                <th scope="col">Title</th>
-                <th scope="col">Genre</th>
-                <th scope="col">Stock</th>
-                <th scope="col">Rate</th>
-                <th scope="col" />
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.movies.map(movie => (
-                <tr key={movie._id}>
-                  <td
-                    className="font-weight-normal"
-                    key={movie._id + "_" + movie.title}
-                  >
-                    {movie.title}
-                  </td>
-                  <td
-                    className="font-weight-normal"
-                    key={movie._id + "_" + movie.genre.name}
-                  >
-                    {movie.genre.name}
-                  </td>
-                  <td
-                    className="font-weight-normal"
-                    key={movie._id + "_" + movie.numberInStock}
-                  >
-                    {movie.numberInStock}
-                  </td>
-                  <td
-                    className="font-weight-normal"
-                    key={movie._id + "_" + movie.dailyRentalRate}
-                  >
-                    {movie.dailyRentalRate}
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => this.handleDelete({ id: movie._id })}
-                      className="btn btn-secondary btn-danger"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <main className="container">
+        <div className="row">
+          <div className="col-3">
+            <ListGroup
+              genres={genres}
+              currentGenre={currentGenre}
+              onGenreSelected={this.handleGenreSelected}
+            />
+          </div>
+          <div className="col">
+            <p>Showing {totalCount} movies in the database</p>
+            <MoviesTable
+              movies={displayedMovies}
+              onLike={this.handleLike}
+              sortColumn={sortColumn}
+              onDelete={this.handleDeleteMovies}
+              onSort={this.handleSort}
+            />
+            <Paginator
+              itemsCount={totalCount}
+              limit={limit}
+              currentPage={currentPage}
+              onPageClicked={this.handlePageClicked}
+            />
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
-  formatMovieCountText() {
-    const { movies } = this.state;
-    return movies.length === 0 ? (
-      <p className="font-weight-bold">There are no movies in the database</p>
-    ) : (
-      <p className="font-weight-bold">
-        Showing {movies.length} movies in the database
-      </p>
-    );
-  }
+  handleDeleteMovies = (id) => {
+    const movies = this.state.movies.filter((movie) => movie._id !== id);
+    this.setState({ movies });
+  };
 }
-
 export default Movies;
