@@ -14,10 +14,6 @@ on:
         description: 'Run Job'
         required: true
         default: 'build_deploy'
-        
-defaults:
-  run:
-    working-directory: vidly
   
 jobs:
   build:
