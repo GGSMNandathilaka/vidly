@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { getGenres } from "../services/fakeGenreService";
-import { getMovies } from "../services/fakeMovieService";
+import { deleteMovie, getMovies } from "../services/fakeMovieService";
 import { paginate } from "../utils/paginate";
 import ListGroup from "./common/list-group";
 import Paginator from "./common/paginator";
@@ -112,8 +112,8 @@ class Movies extends Component {
   }
 
   handleDeleteMovies = (id) => {
-    const movies = this.state.movies.filter((movie) => movie._id !== id);
-    this.setState({ movies });
+    deleteMovie(id);
+    this.setState({ movies: getMovies() });
   };
 }
 export default Movies;

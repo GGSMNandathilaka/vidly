@@ -4,7 +4,6 @@ import Movies from "./components/movies";
 import Customers from "./components/customers";
 import Rentals from "./components/rentals";
 import PageNotFound from "./components/common/pageNotFound";
-import MovieDetail from "./components/movieDetail";
 import React from "react";
 import "./App.css";
 import LoginForm from "./components/loginForm";

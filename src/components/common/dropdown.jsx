@@ -7,7 +7,7 @@ const DropDown = ({ name, label, value, error, items, onChange }) => {
       <select
         id={name}
         name={name}
-        value={value._id}
+        value={value}
         className="form-control custom-select"
         onChange={onChange}
       >

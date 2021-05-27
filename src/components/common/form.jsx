@@ -69,7 +69,7 @@ class Form extends Component {
     );
   }
 
-  renderDropdown(name, label, valueKey, items) {
+  renderDropdown(name, label, items) {
     const { data, errors } = this.state;
     return (
       <DropDown
