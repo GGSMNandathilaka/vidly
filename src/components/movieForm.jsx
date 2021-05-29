@@ -2,7 +2,7 @@ import React from "react";
 import Joi from "joi-browser";
 import Form from "./common/form";
 import { getGenres } from "../services/fakeGenreService";
-import { getMovies, saveMovie } from "../services/fakeMovieService";
+import { getMovie, getMovies, saveMovie } from "../services/fakeMovieService";
 
 class MovieForm extends Form {
   state = {
@@ -15,24 +15,34 @@ class MovieForm extends Form {
       liked: false,
     },
     errors: {},
+    genres: [],
   };
 
   componentDidMount() {
+    const genres = getGenres();
+    this.setState({ genres });
     // check current path contains a valid movie id
     const movies = getMovies();
+
+    const movieId = this.props.match.params.id;
+    if (movieId === "new") return;
+
+    const movie = getMovie(movieId);
+    if (!movie) return this.props.history.replace("/page-not-found");
+
     const isValidId = movies.some((m) => m._id === this.props.match.params.id);
 
-    if (isValidId) {
-      const movie = this.props.location.state;
-      if (movie && movie.genre && movie.genre._id) {
-        movie.genre = movie.genre._id;
-      }
-      const data =
-        this.props.match.path === "/movies/:id" ? movie : this.state.data;
-      this.setState({ data });
-    } else {
-      this.props.history.push("/page-not-found");
-    }
+    this.setState({ data: this.mapToViewModel(movie) });
+  }
+
+  mapToViewModel(movie) {
+    return {
+      _id: movie._id,
+      title: movie.title,
+      genre: movie.genre._id,
+      numberInStock: movie.numberInStock,
+      dailyRentalRate: movie.dailyRentalRate,
+    };
   }
 
   schema = {
@@ -42,8 +52,9 @@ class MovieForm extends Form {
     genre: Joi.string().required().label("Genre"),
     numberInStock: Joi.number()
       .integer()
-      .min(0)
       .required()
+      .min(0)
+      .max(100)
       .label("Number in Stock"),
     dailyRentalRate: Joi.number()
       .min(0)
@@ -61,13 +72,12 @@ class MovieForm extends Form {
   };
 
   render() {
-    const genres = getGenres();
     return (
       <div>
         <h1>Movie Form</h1>
         <form onSubmit={this.handleSubmit}>
           {this.renderInput("title", "Title")}
-          {this.renderDropdown("genre", "Genre", genres)}
+          {this.renderDropdown("genre", "Genre", this.state.genres)}
           {this.renderInput("numberInStock", "Number in Stock", "number")}
           {this.renderInput("dailyRentalRate", "Rate")}
           {this.renderButton("Save")}

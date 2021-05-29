@@ -11,7 +11,7 @@ const DropDown = ({ name, label, value, error, items, onChange }) => {
         className="form-control custom-select"
         onChange={onChange}
       >
-        <option></option>
+        <option value=""></option>
         {items.map((item) => (
           <option value={item._id} key={item._id}>
             {item.name}
