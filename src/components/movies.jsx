@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import { getGenres } from "../services/fakeGenreService";
-import { getMovies } from "../services/fakeMovieService";
+import { deleteMovie, getMovies } from "../services/fakeMovieService";
 import { paginate } from "../utils/paginate";
 import ListGroup from "./common/list-group";
 import Paginator from "./common/paginator";
 import MoviesTable from "./moviesTable";
 import _ from "lodash";
+import { Link } from "react-router-dom";
 
 class Movies extends Component {
   state = {
@@ -82,6 +83,9 @@ class Movies extends Component {
             />
           </div>
           <div className="col">
+            <Link to="/movies/new" className="btn btn-primary bottom-padding">
+              New Movie
+            </Link>
             <p>
               <strong>Showing {totalCount} movies in the database</strong>
             </p>
@@ -105,8 +109,8 @@ class Movies extends Component {
   }
 
   handleDeleteMovies = (id) => {
-    const movies = this.state.movies.filter((movie) => movie._id !== id);
-    this.setState({ movies });
+    deleteMovie(id);
+    this.setState({ movies: getMovies() });
   };
 }
 export default Movies;
