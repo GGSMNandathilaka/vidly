@@ -26,7 +26,7 @@ class LoginForm extends Form {
       );
       localStorage.setItem("token", jwt);
       // redirect to home page
-      this.props.history.push("/");
+      window.location = "/";
     } catch (ex) {
       if (ex.response && ex.response.status === 400) {
         const errors = { ...this.state.errors };
