@@ -1,8 +1,14 @@
 import React from "react";
+import { toast } from "react-toastify";
 import Joi from "joi-browser";
 import Form from "./common/form";
-import { getGenres } from "../services/fakeGenreService";
-import { getMovie, getMovies, saveMovie } from "../services/fakeMovieService";
+import { getGenres } from "../services/genreService";
+import {
+  getMovies,
+  getMovie,
+  updateMovie,
+  createMovie,
+} from "../services/movieService";
 
 class MovieForm extends Form {
   state = {
@@ -16,23 +22,31 @@ class MovieForm extends Form {
     },
     errors: {},
     genres: [],
+    movieId: "",
   };
 
-  componentDidMount() {
-    const genres = getGenres();
+  async componentDidMount() {
+    await this.populateGenre();
+    await this.populateMovie();
+  }
+
+  async populateGenre() {
+    const { data: genres } = await getGenres();
     this.setState({ genres });
-    // check current path contains a valid movie id
-    const movies = getMovies();
+  }
 
-    const movieId = this.props.match.params.id;
-    if (movieId === "new") return;
+  async populateMovie() {
+    try {
+      const movieId = this.props.match.params.id;
+      this.setState({ movieId });
+      if (movieId === "new") return;
 
-    const movie = getMovie(movieId);
-    if (!movie) return this.props.history.replace("/page-not-found");
-
-    const isValidId = movies.some((m) => m._id === this.props.match.params.id);
-
-    this.setState({ data: this.mapToViewModel(movie) });
+      const { data: movie } = await getMovie(movieId);
+      this.setState({ data: this.mapToViewModel(movie) });
+    } catch (ex) {
+      if (ex.response && ex.response.status === 404)
+        return this.props.history.replace("/page-not-found");
+    }
   }
 
   mapToViewModel(movie) {
@@ -40,6 +54,15 @@ class MovieForm extends Form {
       _id: movie._id,
       title: movie.title,
       genre: movie.genre._id,
+      numberInStock: movie.numberInStock,
+      dailyRentalRate: movie.dailyRentalRate,
+    };
+  }
+
+  mapToModelView(movie) {
+    return {
+      title: movie.title,
+      genreId: movie.genre,
       numberInStock: movie.numberInStock,
       dailyRentalRate: movie.dailyRentalRate,
     };
@@ -63,9 +86,20 @@ class MovieForm extends Form {
       .label("Daily Rental Rate"),
   };
 
-  doSubmit = () => {
+  doSubmit = async () => {
     // save movie in the DB
-    saveMovie(this.state.data);
+    try {
+      const updatedMovie = this.mapToModelView(this.state.data);
+      if (this.state.movieId === "new") {
+        const { data } = await createMovie(updatedMovie);
+        toast.success(`Create a new movie: ${data._id}`);
+      } else {
+        const { data } = await updateMovie(this.state.data._id, updatedMovie);
+        toast.success(`Updated a movie: ${data._id}`);
+      }
+    } catch (ex) {
+      if (ex.response) toast.error("Error with saving a movie");
+    }
 
     // redirect to movies page
     this.props.history.push("/movies");

@@ -5,7 +5,7 @@ class NavBar extends Component {
   state = {};
   render() {
     return (
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <nav className="sticky-header navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container-fluid">
           <Link className="navbar-brand" to="/movies">
             Vidly
