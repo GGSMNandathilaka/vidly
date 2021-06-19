@@ -104,6 +104,7 @@ class Movies extends Component {
   }
 
   render() {
+    const { user } = this.props;
     const {
       movies,
       currentPage,
@@ -127,9 +128,11 @@ class Movies extends Component {
             />
           </div>
           <div className="col">
-            <Link to="/movies/new" className="btn btn-primary bottom-padding">
-              New Movie
-            </Link>
+            {user && (
+              <Link to="/movies/new" className="btn btn-primary bottom-padding">
+                New Movie
+              </Link>
+            )}
             <p>
               <strong>Showing {totalCount} movies in the database</strong>
             </p>
